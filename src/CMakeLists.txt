@@ -10,6 +10,10 @@ find_package(
         REQUIRED
 )
 
-add_executable(Serve main.cpp)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_executable(Serve main.cpp ${sources})
 
 target_link_libraries(Serve ${Boost_LIBRARIES})
