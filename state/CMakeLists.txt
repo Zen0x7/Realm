@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.25.1)
 project(Realm)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 find_package(
         Boost 1.86.0
@@ -10,9 +9,11 @@ find_package(
         REQUIRED
 )
 
-file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(src/include)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 add_executable(Serve main.cpp ${sources})
 

@@ -20,16 +20,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Build
+        name: State -> Build and push
         uses: docker/build-push-action@v6
-        if: github.ref != 'refs/heads/master'
         with:
-          push: false
+          push: ${{ github.ref != 'refs/heads/master' }}
           tags: iantorres/realm:latest
-      -
-        name: Build and push
-        uses: docker/build-push-action@v6
-        if: github.ref == 'refs/heads/master'
-        with:
-          push: true
-          tags: iantorres/realm:latest
+          file: state/Dockerfile
