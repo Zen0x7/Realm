@@ -23,6 +23,7 @@ jobs:
         name: State -> Build and push
         uses: docker/build-push-action@v6
         with:
+          context: "{{defaultContext}}:state"
           push: ${{ github.ref != 'refs/heads/master' }}
           tags: iantorres/realm:latest
-          file: state/Dockerfile
+          file: Dockerfile
