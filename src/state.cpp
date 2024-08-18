@@ -1,5 +1,6 @@
-#include <session.h>
 #include <state.h>
+
+#include <session.h>
 
 void state::insert(session * session) {
     sessions_.insert({ session->get_id(), session });

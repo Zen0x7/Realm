@@ -15,6 +15,8 @@ include_directories(src/include)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-add_executable(Serve main.cpp ${sources})
+add_executable(Serve server.cpp ${sources})
+add_executable(Worker worker.cpp ${sources})
 
 target_link_libraries(Serve ${Boost_LIBRARIES})
+target_link_libraries(Worker ${Boost_LIBRARIES})
