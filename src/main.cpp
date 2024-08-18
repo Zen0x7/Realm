@@ -5,11 +5,13 @@
 
 #include <boost/asio/signal_set.hpp>
 
+#include <state.h>
 #include <server.h>
 
 int main(int argc, char *argv[]) {
     boost::asio::io_context io_context_;
-    server server_(io_context_, 8000);
+    auto state_ = std::make_shared<state>();
+    server server_(io_context_, state_, 8000);
     auto threads_number_ = std::thread::hardware_concurrency();
 
     std::vector<std::thread> threads_;

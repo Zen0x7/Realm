@@ -19,3 +19,16 @@ void session::do_write(std::size_t length) {
                     }
                 });
 }
+
+session::~session() {
+    state_->remove(this);
+}
+
+void session::start() {
+    state_->insert(this);
+    do_read();
+}
+
+std::string session::get_id() const {
+    return to_string(id_);
+}
