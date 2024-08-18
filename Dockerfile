@@ -1,6 +1,6 @@
 FROM iantorres/boosted:latest
 
-COPY src .
+COPY . .
 
 RUN cmake . && \
     make
