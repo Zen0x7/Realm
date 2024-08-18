@@ -30,8 +30,8 @@ void session::on_write(const boost::system::error_code &error_code) {
 void session::do_read() {
     auto self(shared_from_this());
     socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                            [this, self](const boost::system::error_code &ec, std::size_t length) {
-                                if (!ec) {
+                            [this, self](const boost::system::error_code &error_code, std::size_t length) {
+                                if (!error_code) {
                                     do_write(length);
                                 }
                             });
@@ -40,8 +40,8 @@ void session::do_read() {
 void session::do_write(std::size_t length) {
     auto self(shared_from_this());
     async_write(socket_, boost::asio::buffer(data_, length),
-                [this, self](const boost::system::error_code &ec, std::size_t /*length*/) {
-                    if (!ec) {
+                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
+                    if (!error_code) {
                         do_read();
                     }
                 });
