@@ -11,8 +11,8 @@ server::server(boost::asio::io_context &io_context, std::shared_ptr<state> const
 
 void server::do_accept() {
     acceptor_.async_accept(socket_,
-                           [this](const boost::system::error_code & ec) {
-                               if (!ec) {
+                           [this](const boost::system::error_code & error_code) {
+                               if (!error_code) {
                                    std::make_shared<session>(std::move(socket_), state_)->start();
                                }
 

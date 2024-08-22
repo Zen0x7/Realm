@@ -12,18 +12,21 @@ void state::remove(const session * session) {
     sessions_.erase(session->get_id());
 }
 
-void state::broadcast(std::string data) {
-    auto const ss = std::make_shared<std::string const>(std::move(data));
+void state::broadcast(const std::string & data) {
+    message message;
+    message.body_length(data.size());
+    std::memcpy(message.body(), data.data(), message.body_length());
+    message.encode_header();
 
-    std::vector<std::weak_ptr<session>> v;
+    std::vector<std::weak_ptr<session>> sessions;
     {
         std::lock_guard lock(mutex_);
-        v.reserve(sessions_.size());
+        sessions.reserve(sessions_.size());
         for (auto p: sessions_)
-            v.emplace_back(p.second->weak_from_this());
+            sessions.emplace_back(p.second->weak_from_this());
     }
 
-    for (auto const & wp : v)
-        if (auto sp = wp.lock())
-            sp->send(ss);
+    for (auto const & reference : sessions)
+        if (auto session = reference.lock())
+            session->write(message);
 }

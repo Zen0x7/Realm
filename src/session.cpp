@@ -2,47 +2,40 @@
 
 #include <boost/asio/placeholders.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <iostream>
 
-void session::on_send(std::shared_ptr<std::string const> const &data) {
-    queue_.push_back(data);
-
-    if (queue_.size() > 1) return;
-
-    socket_.async_send(
-        boost::asio::buffer(*queue_.front()),
-        std::bind(&session::on_write, this, boost::asio::placeholders::error));
-}
-
-void session::on_write(const boost::system::error_code &error_code) {
-    if (error_code) {
-        return;
-    }
-
-    queue_.erase(queue_.begin());
-
-    if (!queue_.empty()) {
-        socket_.async_send(
-            boost::asio::buffer(*queue_.front()),
-            std::bind(&session::on_write, this, boost::asio::placeholders::error));
-    }
-}
-
-void session::do_read() {
+void session::do_read_header() {
     auto self(shared_from_this());
-    socket_.async_read_some(boost::asio::buffer(data_, max_length),
-                            [this, self](const boost::system::error_code &error_code, std::size_t length) {
-                                if (!error_code) {
-                                    do_write(length);
-                                }
-                            });
+    async_read(socket_, boost::asio::buffer(message_.data(), message::header_length),
+               [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
+                   if (!error_code && message_.decode_header()) {
+                       do_read_body();
+                   }
+               });
 }
 
-void session::do_write(std::size_t length) {
+void session::do_read_body() {
     auto self(shared_from_this());
-    async_write(socket_, boost::asio::buffer(data_, length),
-                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
+    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length()),
+               [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
+                   if (!error_code) {
+                       std::cout << "Message received: " << message_.body() << std::endl;
+                       do_read_header();
+                   }
+               });
+}
+
+void session::do_write() {
+    auto self(shared_from_this());
+    async_write(socket_, boost::asio::buffer(queue_.front().data(), queue_.front().length()),
+                [this](const boost::system::error_code &error_code, std::size_t /*length*/) {
                     if (!error_code) {
-                        do_read();
+                        queue_.pop_front();
+                        if (!queue_.empty()) {
+                            do_write();
+                        }
+                    } else {
+                        socket_.close();
                     }
                 });
 }
@@ -58,15 +51,27 @@ session::~session() {
 
 void session::start() {
     state_->insert(this);
-    do_read();
-    const auto accepted_message = std::make_shared<const std::string>("EHLO");
-    this->send(accepted_message);
+    do_read_header();
+
+    const std::string accepted_message = "EHLO";
+    message welcome_message;
+    welcome_message.body_length(accepted_message.size());
+    std::memcpy(welcome_message.body(), accepted_message.data(), welcome_message.body_length());
+    welcome_message.encode_header();
+
+    this->write(welcome_message);
 }
 
-std::string session::get_id() const {
-    return to_string(id_);
+boost::uuids::uuid session::get_id() const {
+    return id_;
 }
 
-void session::send(std::shared_ptr<std::string const> const &data) {
-    post(socket_.get_executor(), std::bind(&session::on_send, this, data));
+void session::write(const message &message) {
+    post(socket_.get_executor(), [this, message] {
+        const bool write_in_progress = !queue_.empty();
+        queue_.push_back(message);
+        if (!write_in_progress) {
+            do_write();
+        }
+    });
 }
