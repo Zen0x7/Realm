@@ -13,10 +13,10 @@ void state::remove(const session *session) {
 }
 
 void state::broadcast(const std::string &data) {
-    message message;
-    message.body_length(data.size());
-    std::memcpy(message.body(), data.data(), message.body_length());
-    message.encode_header();
+    message to_broadcast;
+    to_broadcast.body_length(data.size());
+    std::memcpy(to_broadcast.body(), data.data(), to_broadcast.body_length());
+    to_broadcast.encode_header();
 
     std::vector<std::weak_ptr<session> > sessions; {
         std::lock_guard lock(mutex_);
@@ -27,5 +27,5 @@ void state::broadcast(const std::string &data) {
 
     for (auto const &reference: sessions)
         if (auto session = reference.lock())
-            session->write(message);
+            session->write(to_broadcast);
 }
