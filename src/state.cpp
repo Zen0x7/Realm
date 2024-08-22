@@ -2,28 +2,30 @@
 
 #include <session.h>
 
-void state::insert(session * session) {
+void state::insert(session *session) {
     std::lock_guard lock(mutex_);
-    sessions_.insert({ session->get_id(), session });
+    sessions_.insert({session->get_id(), session});
 }
 
-void state::remove(const session * session) {
+void state::remove(const session *session) {
     std::lock_guard lock(mutex_);
     sessions_.erase(session->get_id());
 }
 
-void state::broadcast(std::string data) {
-    auto const ss = std::make_shared<std::string const>(std::move(data));
+void state::broadcast(const std::string &data) {
+    message to_broadcast;
+    to_broadcast.body_length(data.size());
+    std::memcpy(to_broadcast.body(), data.data(), to_broadcast.body_length());
+    to_broadcast.encode_header();
 
-    std::vector<std::weak_ptr<session>> v;
-    {
+    std::vector<std::weak_ptr<session> > sessions; {
         std::lock_guard lock(mutex_);
-        v.reserve(sessions_.size());
+        sessions.reserve(sessions_.size());
         for (auto p: sessions_)
-            v.emplace_back(p.second->weak_from_this());
+            sessions.emplace_back(p.second->weak_from_this());
     }
 
-    for (auto const & wp : v)
-        if (auto sp = wp.lock())
-            sp->send(ss);
+    for (auto const &reference: sessions)
+        if (auto session = reference.lock())
+            session->write(to_broadcast);
 }
