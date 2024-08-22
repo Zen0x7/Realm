@@ -1,6 +1,5 @@
 #include <session.h>
 
-#include <boost/asio/placeholders.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <iostream>
 

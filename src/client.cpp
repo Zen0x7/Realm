@@ -10,9 +10,9 @@ client::client(boost::asio::io_context &io_context) : resolver_(io_context), soc
 void client::do_resolve() {
     std::string server = "localhost";
     resolver_.async_resolve(server, "8000",
-        std::bind(&client::on_resolve, this,
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::results));
+                            std::bind(&client::on_resolve, this,
+                                      boost::asio::placeholders::error,
+                                      boost::asio::placeholders::results));
 }
 
 void client::on_resolve(const boost::system::error_code &error_code,
@@ -30,23 +30,25 @@ void client::on_connect(const boost::system::error_code &error_code) {
 }
 
 void client::do_read_header() {
-    async_read(socket_, boost::asio::buffer(message_.data(), message::header_length), [this] (const boost::system::error_code & error_code, std::size_t length) {
-        if (!error_code && message_.decode_header()) {
-            do_read_body();
-        } else {
-            socket_.close();
-        }
-    });
+    async_read(socket_, boost::asio::buffer(message_.data(), message::header_length),
+               [this](const boost::system::error_code &error_code, std::size_t length) {
+                   if (!error_code && message_.decode_header()) {
+                       do_read_body();
+                   } else {
+                       socket_.close();
+                   }
+               });
 }
 
 void client::do_read_body() {
-    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length()), [this] (const boost::system::error_code & error_code, std::size_t length) {
-        if (!error_code) {
-            std::cout.write(message_.body(), message_.body_length());
-            std::cout << "\n";
-            do_read_header();
-        } else {
-            socket_.close();
-        }
-    });
+    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length()),
+               [this](const boost::system::error_code &error_code, std::size_t length) {
+                   if (!error_code) {
+                       std::cout.write(message_.body(), message_.body_length());
+                       std::cout << "\n";
+                       do_read_header();
+                   } else {
+                       socket_.close();
+                   }
+               });
 }

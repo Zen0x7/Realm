@@ -4,5 +4,5 @@
 
 class protocol {
 public:
-    void static from_worker(const std::string_view & message);
+    void static from_worker(const std::string_view &message);
 };

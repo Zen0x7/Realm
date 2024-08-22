@@ -9,10 +9,13 @@
 class session;
 
 class state : public std::enable_shared_from_this<state> {
-    std::unordered_map<boost::uuids::uuid, session*, boost::hash<boost::uuids::uuid>> sessions_;
+    std::unordered_map<boost::uuids::uuid, session *, boost::hash<boost::uuids::uuid> > sessions_;
     std::mutex mutex_;
+
 public:
-    void insert(session * session);
-    void remove(const session * session);
-    void broadcast(const std::string & data);
+    void insert(session *session);
+
+    void remove(const session *session);
+
+    void broadcast(const std::string &data);
 };
