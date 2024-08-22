@@ -1,20 +1,38 @@
 #pragma once
 
+#include <bitset>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/serialization/binary_object.hpp>
+
+#include <iostream>
+
+struct message_identifier {
+    char bytes[16];
+};
 
 class message {
 public:
-    static constexpr std::size_t header_length = 4;
+    static constexpr std::size_t header_length = 4 + 16;
     static constexpr std::size_t max_body_length = 512;
+    boost::uuids::uuid id_;
 
-    message()
-        : body_length_(0) {
-    }
+    message() : id_(boost::uuids::random_generator()()), body_length_(0) { }
 
     const char *data() const {
         return data_;
+    }
+
+    static message from_string(const std::string & data) {
+        message msg;
+        msg.body_length(data.size());
+        std::memcpy(msg.body(), data.data(), msg.body_length());
+        msg.encode_header();
+        return msg;
     }
 
     char *data() {
