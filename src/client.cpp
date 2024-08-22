@@ -29,19 +29,6 @@ void client::on_connect(const boost::system::error_code &error_code) {
     }
 }
 
-void client::on_read(const boost::system::error_code &error_code, size_t bytes_transferred) {
-    if (error_code) {
-        return;
-    }
-
-    std::cout << buffer_ << std::endl;
-    const std::string_view message(buffer_);
-
-    protocol::from_worker(message);
-
-    do_read_header();
-}
-
 void client::do_read_header() {
     async_read(socket_, boost::asio::buffer(message_.data(), message::header_length), [this] (const boost::system::error_code & error_code, std::size_t length) {
         if (!error_code && message_.decode_header()) {
