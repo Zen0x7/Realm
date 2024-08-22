@@ -1,7 +1,7 @@
 #include <session.h>
 
 #include <boost/uuid/random_generator.hpp>
-#include <iostream>
+#include <protocol.h>
 
 void session::do_read_header() {
     auto self(shared_from_this());
@@ -9,6 +9,8 @@ void session::do_read_header() {
                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
                    if (!error_code && message_.decode_header()) {
                        do_read_body();
+                   } else {
+                       socket_.close();
                    }
                });
 }
@@ -18,8 +20,10 @@ void session::do_read_body() {
     async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length()),
                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
                    if (!error_code) {
-                       std::cout << "Message received: " << message_.body() << std::endl;
+                       protocol::from_server(message_.body(), message_.body_length());
                        do_read_header();
+                   } else {
+                       socket_.close();
                    }
                });
 }
@@ -52,13 +56,8 @@ void session::start() {
     state_->insert(this);
     do_read_header();
 
-    const std::string accepted_message = "EHLO";
-    message welcome_message;
-    welcome_message.body_length(accepted_message.size());
-    std::memcpy(welcome_message.body(), accepted_message.data(), welcome_message.body_length());
-    welcome_message.encode_header();
-
-    this->write(welcome_message);
+    const auto accepted_message = message::from_string("EHLO");
+    this->write(accepted_message);
 }
 
 boost::uuids::uuid session::get_id() const {
