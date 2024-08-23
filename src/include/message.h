@@ -35,8 +35,8 @@ public:
 
     [[nodiscard]] std::string get_serialized_id() const {
         std::ostringstream stream;
-        for (const unsigned char byte : id_.data) {
-            stream << byte;
+        for (auto it = id_.begin(); it != id_.end(); ++it) {
+            stream << *it;
         }
         return stream.str();
     }
