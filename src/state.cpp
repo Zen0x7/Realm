@@ -13,10 +13,7 @@ void state::remove(const session *session) {
 }
 
 void state::broadcast(const std::string &data) {
-    message to_broadcast;
-    to_broadcast.body_length(data.size());
-    std::memcpy(to_broadcast.body(), data.data(), to_broadcast.body_length());
-    to_broadcast.encode_header();
+    message to_broadcast = message::from_string(data);
 
     std::vector<std::weak_ptr<session> > sessions; {
         std::lock_guard lock(mutex_);
