@@ -10,8 +10,7 @@
 #include <boost/crc.hpp>
 #include <boost/algorithm/hex.hpp>
 #include <sstream>
-
-#include <iostream>
+#include <iterator>
 
 class message {
 public:
