@@ -17,11 +17,15 @@ void session::do_read_header() {
 
 void session::do_read_body() {
     auto self(shared_from_this());
-    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length()),
+    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length() + 4),
                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
                    if (!error_code) {
-                       protocol::from_server(message_);
-                       do_read_header();
+                       const auto reply = protocol::from_server(message_);
+                       if (!reply.closes) {
+                           do_read_header();
+                       } else {
+                           socket_.close();
+                       }
                    } else {
                        socket_.close();
                    }
@@ -30,7 +34,7 @@ void session::do_read_body() {
 
 void session::do_write() {
     auto self(shared_from_this());
-    async_write(socket_, boost::asio::buffer(queue_.front().data(), queue_.front().length()),
+    async_write(socket_, boost::asio::buffer(queue_.front().data(), queue_.front().length() + 4),
                 [this](const boost::system::error_code &error_code, std::size_t /*length*/) {
                     if (!error_code) {
                         queue_.pop_front();

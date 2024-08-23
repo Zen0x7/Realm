@@ -7,7 +7,8 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/serialization/binary_object.hpp>
+#include <boost/crc.hpp>
+#include <boost/algorithm/hex.hpp>
 #include <sstream>
 
 #include <iostream>
@@ -27,18 +28,18 @@ public:
     }
 
     static message from_string(const std::string &data) {
-        message msg;
-        msg.body_length(data.size());
-        msg.encode(data);
-        return msg;
+        message draft;
+        draft.body_length(data.size());
+        draft.encode(data);
+        return draft;
     }
 
     [[nodiscard]] std::string get_serialized_id() const {
-        std::ostringstream convert;
-        for (const unsigned char a : id_.data) {
-            convert << a;
+        std::ostringstream stream;
+        for (const unsigned char byte : id_.data) {
+            stream << byte;
         }
-        return convert.str();
+        return stream.str();
     }
 
     static boost::uuids::uuid parse_serialized_id(const std::string &id) {
@@ -99,6 +100,14 @@ public:
         ss.write(get_serialized_id().data(), 16);
         ss.write(get_serialized_id().data(), 16);
         ss.write(data.data(), data.size());
+
+        boost::crc_32_type crc;
+        crc.process_bytes(ss.str().data(), ss.str().size());
+        char checksum[4] = "";
+        const unsigned long checksum_value = crc.checksum();
+        std::memcpy(checksum, &checksum_value, 4);
+
+        ss.write(checksum, 4);
 
         std::memcpy(data_, ss.str().data(), ss.str().size());
     }
