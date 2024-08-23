@@ -30,9 +30,9 @@ void client::on_connect(const boost::system::error_code &error_code) {
 }
 
 void client::do_read_header() {
-    async_read(socket_, boost::asio::buffer(message_.data(), message::header_length),
+    async_read(socket_, boost::asio::buffer(message_.data(), message::header_length_),
                [this](const boost::system::error_code &error_code, std::size_t length) {
-                   if (!error_code && message_.decode_header()) {
+                   if (!error_code && message_.decode()) {
                        do_read_body();
                    } else {
                        socket_.close();
