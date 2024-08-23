@@ -12,10 +12,6 @@
 
 #include <iostream>
 
-struct message_identifier {
-    char bytes[16];
-};
-
 class message {
 public:
     static constexpr std::size_t attribute_size_length_ = 4;
