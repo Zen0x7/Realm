@@ -11,6 +11,7 @@
 #include <boost/algorithm/hex.hpp>
 #include <sstream>
 #include <iterator>
+#include <foreach.h>
 
 class message {
 public:
@@ -35,9 +36,12 @@ public:
 
     [[nodiscard]] std::string get_serialized_id() const {
         std::ostringstream stream;
-        for (auto it = id_.begin(); it != id_.end(); ++it) {
-            stream << *it;
+        foreach (const uint8_t item, id_) {
+            stream << item;
         }
+        // for (auto it = id_.begin(); it != id_.end(); ++it) {
+            // stream << *it;
+        // }
         return stream.str();
     }
 
