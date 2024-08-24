@@ -36,7 +36,7 @@ public:
 
     [[nodiscard]] std::string get_serialized_id() const {
         std::ostringstream stream;
-        foreach (const uint8_t item, id_) {
+        foreach (const uint8_t &item, id_) {
             stream << item;
         }
         return stream.str();

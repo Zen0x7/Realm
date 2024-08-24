@@ -19,11 +19,11 @@ void state::broadcast(const std::string &data) {
     std::vector<std::weak_ptr<session> > sessions; {
         std::lock_guard lock(mutex_);
         sessions.reserve(sessions_.size());
-        foreach (const auto p, sessions_)
+        foreach (const auto &p, sessions_)
             sessions.emplace_back(p.second->weak_from_this());
     }
 
     foreach (auto const &reference, sessions)
-        if (const auto session = reference.lock())
+        if (const auto &session = reference.lock())
             session->write(to_broadcast);
 }
