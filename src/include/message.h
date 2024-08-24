@@ -1,17 +1,18 @@
 #pragma once
 
+#include <foreach.h>
+
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/crc.hpp>
+#include <boost/algorithm/hex.hpp>
+
 #include <bitset>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/crc.hpp>
-#include <boost/algorithm/hex.hpp>
 #include <sstream>
 #include <iterator>
-#include <foreach.h>
 
 class message {
 public:

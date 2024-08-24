@@ -1,9 +1,11 @@
-#include <session.h>
+#include <worker.h>
 
-#include <boost/uuid/random_generator.hpp>
 #include <protocol.h>
 
-void session::do_read_header() {
+#include <boost/asio/ts/buffer.hpp>
+#include <boost/uuid/random_generator.hpp>
+
+void worker::do_read_header() {
     auto self(shared_from_this());
     async_read(socket_, boost::asio::buffer(message_.data(), message::header_length_),
                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
@@ -15,7 +17,7 @@ void session::do_read_header() {
                });
 }
 
-void session::do_read_body() {
+void worker::do_read_body() {
     auto self(shared_from_this());
     async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length() + 4),
                [this, self](const boost::system::error_code &error_code, std::size_t /*length*/) {
@@ -32,7 +34,7 @@ void session::do_read_body() {
                });
 }
 
-void session::do_write() {
+void worker::do_write() {
     auto self(shared_from_this());
     async_write(socket_, boost::asio::buffer(queue_.front().data(), queue_.front().length() + 4),
                 [this](const boost::system::error_code &error_code, std::size_t /*length*/) {
@@ -47,16 +49,16 @@ void session::do_write() {
                 });
 }
 
-session::session(boost::asio::ip::tcp::socket socket, std::shared_ptr<state> const &state) : state_(state),
+worker::worker(boost::asio::ip::tcp::socket socket, std::shared_ptr<state> const &state) : state_(state),
     id_(boost::uuids::random_generator()()),
     socket_(std::move(socket)) {
 }
 
-session::~session() {
+worker::~worker() {
     state_->remove(this);
 }
 
-void session::start() {
+void worker::start() {
     state_->insert(this);
     do_read_header();
 
@@ -64,11 +66,11 @@ void session::start() {
     this->write(accepted_message);
 }
 
-boost::uuids::uuid session::get_id() const {
+boost::uuids::uuid worker::get_id() const {
     return id_;
 }
 
-void session::write(const message &message) {
+void worker::write(const message &message) {
     post(socket_.get_executor(), [this, message] {
         const bool write_in_progress = !queue_.empty();
         queue_.push_back(message);

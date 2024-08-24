@@ -1,12 +1,8 @@
 #pragma once
 
-#include <deque>
-#include <boost/asio/ts/internet.hpp>
-#include <boost/asio.hpp>
-#include <message.h>
-#include <session.h>
+#include <message_queue.h>
 
-typedef std::deque<message> message_queue;
+#include <boost/asio.hpp>
 
 class client {
 public:

@@ -1,39 +1,42 @@
 #include <protocol.h>
+
 #include <message.h>
+
 #include <iostream>
 
-response protocol::from_worker(const message & message) {
+protocol_response protocol::from_worker(const message & message) {
     if (has_integrity(message)) {
         // Works
         std::string data = { message.body(), message.body_length() };
 
         std::cout << data << std::endl;
         return {
-            .status_code_ = response::OK,
+            .status_code_ = protocol_response::OK,
             .closes = false,
         };
     }
 
     return {
-        .status_code_ = response::CRC_ERROR,
+        .status_code_ = protocol_response::CRC_ERROR,
         .closes = true,
     };
 }
 
-response protocol::from_server(const message & message)  {
+protocol_response protocol::from_server(const message & message)  {
     if (has_integrity(message)) {
         // Works
-        std::string data = { message.body(), message.body_length() };
+        const std::string data = { message.body(), message.body_length() };
+
 
         std::cout << data << std::endl;
         return {
-            .status_code_ = response::OK,
+            .status_code_ = protocol_response::OK,
             .closes = false,
         };
     }
 
     return {
-        .status_code_ = response::CRC_ERROR,
+        .status_code_ = protocol_response::CRC_ERROR,
         .closes = true,
     };
 }
