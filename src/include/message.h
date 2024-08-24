@@ -39,9 +39,6 @@ public:
         foreach (const uint8_t item, id_) {
             stream << item;
         }
-        // for (auto it = id_.begin(); it != id_.end(); ++it) {
-            // stream << *it;
-        // }
         return stream.str();
     }
 

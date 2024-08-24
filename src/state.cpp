@@ -1,6 +1,7 @@
 #include <state.h>
 
 #include <session.h>
+#include <foreach.h>
 
 void state::insert(session *session) {
     std::lock_guard lock(mutex_);
@@ -18,11 +19,11 @@ void state::broadcast(const std::string &data) {
     std::vector<std::weak_ptr<session> > sessions; {
         std::lock_guard lock(mutex_);
         sessions.reserve(sessions_.size());
-        for (auto p: sessions_)
+        foreach (const auto p, sessions_)
             sessions.emplace_back(p.second->weak_from_this());
     }
 
-    for (auto const &reference: sessions)
-        if (auto session = reference.lock())
+    foreach (auto const &reference, sessions)
+        if (const auto session = reference.lock())
             session->write(to_broadcast);
 }
