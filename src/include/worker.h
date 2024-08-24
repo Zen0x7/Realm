@@ -1,19 +1,15 @@
 #pragma once
 
-#include <boost/asio/ts/buffer.hpp>
+#include <state.h>
+#include <message_queue.h>
+
 #include <boost/asio/ts/internet.hpp>
 
-#include <state.h>
-#include <message.h>
-#include <deque>
-
-typedef std::deque<message> messages_queue;
-
-class session : public std::enable_shared_from_this<session> {
+class worker : public std::enable_shared_from_this<worker> {
 public:
-    session(boost::asio::ip::tcp::socket socket, std::shared_ptr<state> const &state);
+    worker(boost::asio::ip::tcp::socket socket, std::shared_ptr<state> const &state);
 
-    ~session();
+    ~worker();
 
     void start();
 

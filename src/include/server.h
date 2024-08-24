@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/asio/ts/internet.hpp>
-
 #include <state.h>
+
+#include <boost/asio/ts/internet.hpp>
 
 class server {
 public:
