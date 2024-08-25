@@ -13,12 +13,13 @@
 #include <cstring>
 #include <sstream>
 #include <iterator>
+#include <iostream>
 
 class message {
 public:
-    static constexpr std::size_t attribute_size_length_ = 4;
-    static constexpr std::size_t header_length_ = 4 + 16 + 16;
-    static constexpr std::size_t max_body_length = 512;
+    static constexpr std::size_t attribute_size_length_ = 2;
+    static constexpr std::size_t header_length_ = 2 + 16 + 16;
+    static constexpr std::size_t max_body_length = 1024;
     boost::uuids::uuid id_;
 
     message() : id_(boost::uuids::random_generator()()), body_length_(0) {
@@ -58,11 +59,11 @@ public:
     }
 
     const char *body() const {
-        return data_ + 36;
+        return data_ + header_length_;
     }
 
     char *body() {
-        return data_ + 36;
+        return data_ + header_length_;
     }
 
     std::size_t body_length() const {
@@ -76,15 +77,13 @@ public:
     }
 
     bool decode() {
-        char size[5] = "";
-        std::memcpy(size, data_ + 0, 4);
-        body_length_ = std::atoi(size);
+        std::memcpy(&body_length_, data_ + 0, 2);
 
         char sender_id[17] = "";
-        std::memcpy(sender_id, data_ + 4, 16);
+        std::memcpy(sender_id, data_ + 2, 16);
 
         char receiver_id[17] = "";
-        std::memcpy(receiver_id, data_ + 20, 16);
+        std::memcpy(receiver_id, data_ + 18, 16);
 
         if (body_length_ > max_body_length) {
             body_length_ = 0;
@@ -94,10 +93,10 @@ public:
     }
 
     void encode(const std::string & data) {
-        char header[attribute_size_length_] = "";
-        std::sprintf(header, "%4d", static_cast<int>(body_length_));
+        auto * body_size = (char *)(&body_length_);
         std::stringstream ss;
-        ss.write(header, 4);
+
+        ss.write(body_size, 2);
         ss.write(get_serialized_id().data(), 16);
         ss.write(get_serialized_id().data(), 16);
         ss.write(data.data(), data.size());
