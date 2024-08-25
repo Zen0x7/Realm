@@ -27,7 +27,7 @@ message message::from_string(const std::string &data, const boost::uuids::uuid &
     return draft;
 }
 
-std::string message::serialize(const boost::uuids::uuid & id) {
+std::string message::serialize(const boost::uuids::uuid &id) {
     std::ostringstream stream;
     foreach(const uint8_t &item, id) {
         stream << item;
@@ -46,11 +46,11 @@ char *message::data() {
 }
 
 std::string message::get_sender() {
-    return { data_ + 2, 16 };
+    return {data_ + attribute_size_length_, attribute_identifier_length_};
 }
 
 std::string message::get_identifier() {
-    return { data_ + 18, 16 };
+    return {data_ + attribute_size_length_ + attribute_identifier_length_, attribute_identifier_length_};
 }
 
 std::size_t message::length() const {
