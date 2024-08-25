@@ -42,7 +42,7 @@ void client::do_read_header() {
 }
 
 void client::do_read_body() {
-    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length() + 4),
+    async_read(socket_, boost::asio::buffer(message_.body(), message_.body_length() + message::attribute_checksum_length_),
                [this](const boost::system::error_code &error_code, std::size_t length) {
                    if (!error_code) {
                        const auto reply = protocol::from_worker(message_);
