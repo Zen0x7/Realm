@@ -1,7 +1,8 @@
 #pragma once
 
-#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+
+#include <string>
 
 class message {
 public:

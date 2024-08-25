@@ -3,6 +3,7 @@
 #include <foreach.h>
 
 #include <boost/crc.hpp>
+#include <boost/uuid/random_generator.hpp>
 
 #include <cstring>
 #include <sstream>
