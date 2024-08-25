@@ -42,8 +42,8 @@ protocol_response protocol::from_server(const message & message)  {
 }
 
 bool protocol::has_integrity(const message &message) {
-    const std::string checksum = { message.data() + 36 + message.body_length(), 4};
-    const std::string body = { message.data(), 36 + message.body_length() };
+    const std::string checksum = { message.data() + 34 + message.body_length(), 4};
+    const std::string body = { message.data(), 34 + message.body_length() };
 
     boost::crc_32_type crc;
     crc.process_bytes(body.data(), body.size());
