@@ -1,17 +1,8 @@
 #pragma once
 
-#include <foreach.h>
-
-#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/crc.hpp>
-#include <boost/algorithm/hex.hpp>
 
-#include <bitset>
-#include <cstdio>
-#include <cstring>
-#include <sstream>
-#include <iostream>
+#include <string>
 
 class message {
 public:
@@ -22,95 +13,30 @@ public:
     static constexpr std::size_t max_body_length = 1024 - header_length_;
     boost::uuids::uuid id_;
 
-    message() : id_(boost::uuids::random_generator()()), body_length_(0) {
-    }
+    message();
 
-    const char *data() const {
-        return data_;
-    }
+    [[nodiscard]] const char *data() const;
+    char *data();
 
-    static message from_string(const std::string &data) {
-        message draft;
-        draft.body_length(data.size());
-        draft.encode(data);
-        return draft;
-    }
+    static message from_string(const std::string &data);
 
-    [[nodiscard]] std::string get_serialized_id() const {
-        std::ostringstream stream;
-        foreach (const uint8_t &item, id_) {
-            stream << item;
-        }
-        return stream.str();
-    }
+    [[nodiscard]] std::string get_serialized_id() const;
 
-    static boost::uuids::uuid parse_serialized_id(const std::string &id) {
-        boost::uuids::uuid output = {};
-        std::memcpy(output.data, id.data(), attribute_identifier_length_);
-        return output;
-    }
+    static boost::uuids::uuid parse_serialized_id(const std::string &id);
 
-    char *data() {
-        return data_;
-    }
+    [[nodiscard]] std::size_t length() const;
 
-    std::size_t length() const {
-        return header_length_ + body_length_;
-    }
+    [[nodiscard]] const char *body() const;
 
-    const char *body() const {
-        return data_ + header_length_;
-    }
+    char *body();
 
-    char *body() {
-        return data_ + header_length_;
-    }
+    [[nodiscard]] std::size_t body_length() const;
 
-    std::size_t body_length() const {
-        return body_length_;
-    }
+    void body_length(std::size_t new_length);
 
-    void body_length(std::size_t new_length) {
-        body_length_ = new_length;
-        if (body_length_ > max_body_length)
-            body_length_ = max_body_length;
-    }
+    bool decode();
 
-    bool decode() {
-        std::memcpy(&body_length_, data_ + 0, attribute_size_length_);
-
-        char sender_id[attribute_identifier_length_] = "";
-        std::memcpy(sender_id, data_ + attribute_size_length_, attribute_identifier_length_);
-
-        char receiver_id[attribute_identifier_length_] = "";
-        std::memcpy(receiver_id, data_ + (attribute_size_length_ + attribute_identifier_length_), attribute_identifier_length_);
-
-        if (body_length_ > max_body_length) {
-            body_length_ = 0;
-            return false;
-        }
-        return true;
-    }
-
-    void encode(const std::string & data) {
-        auto * body_size = (char *)(&body_length_);
-        std::stringstream ss;
-
-        ss.write(body_size, attribute_size_length_);
-        ss.write(get_serialized_id().data(), attribute_identifier_length_);
-        ss.write(get_serialized_id().data(), attribute_identifier_length_);
-        ss.write(data.data(), data.size());
-
-        boost::crc_32_type crc;
-        crc.process_bytes(ss.str().data(), ss.str().size());
-        char checksum[attribute_checksum_length_] = "";
-        const unsigned long checksum_value = crc.checksum();
-        std::memcpy(checksum, &checksum_value, attribute_checksum_length_);
-
-        ss.write(checksum, attribute_checksum_length_);
-
-        std::memcpy(data_, ss.str().data(), ss.str().size());
-    }
+    void encode(const std::string & data);
 
 private:
     char data_[header_length_ + max_body_length] = "";
