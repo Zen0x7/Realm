@@ -23,5 +23,5 @@ jobs:
         name: State -> Build and push
         uses: docker/build-push-action@v6
         with:
-          push: ${{ github.ref != 'refs/heads/master' }}
+          push: ${{ github.ref == 'refs/heads/master' }}
           tags: iantorres/realm:latest

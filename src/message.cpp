@@ -58,8 +58,7 @@ std::size_t message::body_length() const {
 
 void message::body_length(std::size_t new_length) {
     body_length_ = new_length;
-    if (body_length_ > max_body_length)
-        body_length_ = max_body_length;
+    if (body_length_ > max_body_length) body_length_ = max_body_length;
 }
 
 bool message::decode() {
