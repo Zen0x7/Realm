@@ -2,6 +2,8 @@
 
 #include <message.h>
 
+#include <boost/crc.hpp>
+
 #include <iostream>
 
 protocol_response protocol::from_worker(const message & message) {
