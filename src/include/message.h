@@ -22,7 +22,7 @@ public:
 
     static message from_string(const std::string &data, const boost::uuids::uuid & sender_id);
 
-    [[nodiscard]] std::string get_serialized_id() const;
+    [[nodiscard]] static char * serialize(const boost::uuids::uuid & id);
 
     static boost::uuids::uuid parse_serialized_id(const std::string &id);
 

@@ -27,12 +27,12 @@ message message::from_string(const std::string &data, const boost::uuids::uuid &
     return draft;
 }
 
-std::string message::get_serialized_id() const {
+char * message::serialize(const boost::uuids::uuid & id) {
     std::ostringstream stream;
-    foreach(const uint8_t &item, id_) {
+    foreach(const uint8_t &item, id) {
         stream << item;
     }
-    return stream.str();
+    return stream.str().data();
 }
 
 boost::uuids::uuid message::parse_serialized_id(const std::string &id) {
@@ -84,21 +84,19 @@ bool message::decode() {
 }
 
 void message::encode(const std::string &data) {
-    auto *body_size = (char *) (&body_length_);
-    std::stringstream ss;
-
-    ss.write(body_size, attribute_size_length_);
-    ss.write(get_serialized_id().data(), attribute_identifier_length_);
-    ss.write(get_serialized_id().data(), attribute_identifier_length_);
-    ss.write(data.data(), data.size());
+    auto *body_size = (char *) &body_length_;
+    std::stringstream stream;
+    stream.write(body_size, attribute_size_length_);
+    stream.write(serialize(sender_id_), attribute_identifier_length_);
+    stream.write(serialize(id_), attribute_identifier_length_);
+    stream.write(data.data(), data.size());
 
     boost::crc_32_type crc;
-    crc.process_bytes(ss.str().data(), ss.str().size());
+    crc.process_bytes(stream.str().data(), stream.str().size());
     char checksum[attribute_checksum_length_] = "";
     const unsigned long checksum_value = crc.checksum();
     std::memcpy(checksum, &checksum_value, attribute_checksum_length_);
+    stream.write(checksum, attribute_checksum_length_);
 
-    ss.write(checksum, attribute_checksum_length_);
-
-    std::memcpy(data_, ss.str().data(), ss.str().size());
+    std::memcpy(data_, stream.str().data(), stream.str().size());
 }
