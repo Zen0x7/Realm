@@ -27,12 +27,12 @@ message message::from_string(const std::string &data, const boost::uuids::uuid &
     return draft;
 }
 
-char * message::serialize(const boost::uuids::uuid & id) {
+std::string message::serialize(const boost::uuids::uuid & id) {
     std::ostringstream stream;
     foreach(const uint8_t &item, id) {
         stream << item;
     }
-    return stream.str().data();
+    return stream.str();
 }
 
 boost::uuids::uuid message::parse_serialized_id(const std::string &id) {
@@ -43,6 +43,14 @@ boost::uuids::uuid message::parse_serialized_id(const std::string &id) {
 
 char *message::data() {
     return data_;
+}
+
+std::string message::get_sender() {
+    return { data_ + 2, 16 };
+}
+
+std::string message::get_identifier() {
+    return { data_ + 18, 16 };
 }
 
 std::size_t message::length() const {
@@ -69,11 +77,9 @@ void message::body_length(std::size_t new_length) {
 bool message::decode() {
     std::memcpy(&body_length_, data_ + 0, attribute_size_length_);
 
-    char sender_id[attribute_identifier_length_] = "";
-    std::memcpy(sender_id, data_ + attribute_size_length_, attribute_identifier_length_);
+    std::memcpy(sender_id_.data, data_ + attribute_size_length_, attribute_identifier_length_);
 
-    char receiver_id[attribute_identifier_length_] = "";
-    std::memcpy(receiver_id, data_ + (attribute_size_length_ + attribute_identifier_length_),
+    std::memcpy(id_.data, data_ + (attribute_size_length_ + attribute_identifier_length_),
                 attribute_identifier_length_);
 
     if (body_length_ > max_body_length) {
@@ -87,8 +93,8 @@ void message::encode(const std::string &data) {
     auto *body_size = (char *) &body_length_;
     std::stringstream stream;
     stream.write(body_size, attribute_size_length_);
-    stream.write(serialize(sender_id_), attribute_identifier_length_);
-    stream.write(serialize(id_), attribute_identifier_length_);
+    stream.write(serialize(sender_id_).data(), attribute_identifier_length_);
+    stream.write(serialize(id_).data(), attribute_identifier_length_);
     stream.write(data.data(), data.size());
 
     boost::crc_32_type crc;
