@@ -62,7 +62,8 @@ void worker::start() {
     state_->insert(this);
     do_read_header();
 
-    const auto accepted_message = message::from_string("EHLO");
+    const auto accepted_message = message::from_string("EHLO", state_->get_id());
+
     this->write(accepted_message);
 }
 

@@ -12,13 +12,15 @@ public:
     static constexpr std::size_t header_length_ = attribute_size_length_ + (attribute_identifier_length_ * 2);
     static constexpr std::size_t max_body_length = 1024 - header_length_;
     boost::uuids::uuid id_;
+    boost::uuids::uuid sender_id_;
 
+    explicit message(const boost::uuids::uuid & sender_id);
     message();
 
     [[nodiscard]] const char *data() const;
     char *data();
 
-    static message from_string(const std::string &data);
+    static message from_string(const std::string &data, const boost::uuids::uuid & sender_id);
 
     [[nodiscard]] std::string get_serialized_id() const;
 

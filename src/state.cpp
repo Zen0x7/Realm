@@ -3,6 +3,12 @@
 #include <worker.h>
 #include <foreach.h>
 
+state::state() : id_(boost::uuids::random_generator()()) {}
+
+boost::uuids::uuid state::get_id() const {
+    return id_;
+}
+
 void state::insert(worker *worker) {
     std::lock_guard lock(mutex_);
     workers_.insert({worker->get_id(), worker});
@@ -14,7 +20,7 @@ void state::remove(const worker *worker) {
 }
 
 void state::broadcast(const std::string &data) {
-    message to_broadcast = message::from_string(data);
+    const message to_broadcast = message::from_string(data, this->get_id());
 
     std::vector<std::weak_ptr<worker> > workers; {
         std::lock_guard lock(mutex_);

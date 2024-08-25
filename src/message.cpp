@@ -8,15 +8,20 @@
 #include <cstring>
 #include <sstream>
 
-message::message() : id_(boost::uuids::random_generator()()), body_length_(0) {
+message::message(const boost::uuids::uuid &sender_id) : id_(boost::uuids::random_generator()()), sender_id_(sender_id),
+                                                        body_length_(0) {
 }
 
-const char * message::data() const {
+message::message(): id_(boost::uuids::random_generator()()), sender_id_(boost::uuids::random_generator()()),
+                    body_length_(0) {
+}
+
+const char *message::data() const {
     return data_;
 }
 
-message message::from_string(const std::string &data) {
-    message draft;
+message message::from_string(const std::string &data, const boost::uuids::uuid &sender_id) {
+    message draft(sender_id);
     draft.body_length(data.size());
     draft.encode(data);
     return draft;
@@ -24,7 +29,7 @@ message message::from_string(const std::string &data) {
 
 std::string message::get_serialized_id() const {
     std::ostringstream stream;
-    foreach (const uint8_t &item, id_) {
+    foreach(const uint8_t &item, id_) {
         stream << item;
     }
     return stream.str();
@@ -36,7 +41,7 @@ boost::uuids::uuid message::parse_serialized_id(const std::string &id) {
     return output;
 }
 
-char * message::data() {
+char *message::data() {
     return data_;
 }
 
@@ -44,11 +49,11 @@ std::size_t message::length() const {
     return header_length_ + body_length_;
 }
 
-const char * message::body() const {
+const char *message::body() const {
     return data_ + header_length_;
 }
 
-char * message::body() {
+char *message::body() {
     return data_ + header_length_;
 }
 
@@ -68,7 +73,8 @@ bool message::decode() {
     std::memcpy(sender_id, data_ + attribute_size_length_, attribute_identifier_length_);
 
     char receiver_id[attribute_identifier_length_] = "";
-    std::memcpy(receiver_id, data_ + (attribute_size_length_ + attribute_identifier_length_), attribute_identifier_length_);
+    std::memcpy(receiver_id, data_ + (attribute_size_length_ + attribute_identifier_length_),
+                attribute_identifier_length_);
 
     if (body_length_ > max_body_length) {
         body_length_ = 0;
@@ -78,7 +84,7 @@ bool message::decode() {
 }
 
 void message::encode(const std::string &data) {
-    auto * body_size = (char *)(&body_length_);
+    auto *body_size = (char *) (&body_length_);
     std::stringstream ss;
 
     ss.write(body_size, attribute_size_length_);
@@ -96,4 +102,3 @@ void message::encode(const std::string &data) {
 
     std::memcpy(data_, ss.str().data(), ss.str().size());
 }
-
