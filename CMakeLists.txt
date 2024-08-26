@@ -31,11 +31,9 @@ enable_testing()
 
 add_executable(Test ${tests} ${sources})
 
-add_executable(Serve server.cpp ${sources})
-add_executable(Worker worker.cpp ${sources})
+add_executable(Serve main.cpp ${sources})
 
 target_link_libraries(Serve ${Boost_LIBRARIES})
-target_link_libraries(Worker ${Boost_LIBRARIES})
 target_link_libraries(Test GTest::gtest_main)
 
 include(GoogleTest)
