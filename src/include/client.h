@@ -10,6 +10,8 @@ public:
 
     void do_resolve();
 
+    void run();
+
 private:
     boost::asio::ip::tcp::resolver resolver_;
     boost::asio::ip::tcp::socket socket_;

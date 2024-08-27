@@ -5,7 +5,6 @@
 #include <iostream>
 
 client::client(boost::asio::io_context &io_context) : resolver_(io_context), socket_(io_context) {
-    do_resolve();
 }
 
 void client::do_resolve() {
@@ -16,6 +15,10 @@ void client::do_resolve() {
                                       boost::asio::placeholders::results));
 }
 
+void client::run() {
+    do_resolve();
+}
+
 void client::on_resolve(const boost::system::error_code &error_code,
                         const boost::asio::ip::tcp::resolver::results_type &endpoints) {
     if (!error_code) {
@@ -23,7 +26,12 @@ void client::on_resolve(const boost::system::error_code &error_code,
                       std::bind(&client::on_connect, this, boost::asio::placeholders::error));
     } else {
         // do_resolve();
-        throw std::invalid_argument("Can't resolve");
+        std::cout << "Resolving ..." << std::endl;
+        std::string server = "localhost";
+        resolver_.async_resolve(server, "8000",
+                                std::bind(&client::on_resolve, this,
+                                          boost::asio::placeholders::error,
+                                          boost::asio::placeholders::results));
     }
 }
 
