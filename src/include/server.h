@@ -16,6 +16,5 @@ private:
 
     std::shared_ptr<state> state_;
     boost::asio::ip::tcp::acceptor acceptor_;
-    boost::asio::ip::tcp::socket socket_;
     boost::asio::io_context &io_context_;
 };

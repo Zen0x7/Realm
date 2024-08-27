@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <constants.h>
 
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
@@ -9,8 +10,6 @@
 #include <state.h>
 #include <server.h>
 #include <client.h>
-
-#define VERSION "1.0.0"
 
 int main(int argc, char *argv[]) {
     boost::program_options::options_description program_description("Allowed options");
@@ -46,8 +45,8 @@ int main(int argc, char *argv[]) {
     store(parse_command_line(argc, argv, commandline_description), vm);
     notify(vm);
 
-    std::cout << "[INFO] 2024 © Ian Torres — All rights reserved" << std::endl;
-    std::cout << "[INFO] Realm version "
+    std::cout << INFO << "2024 © Ian Torres — All rights reserved" << std::endl;
+    std::cout << INFO << "Realm version "
             << VERSION
             << std::endl;
 
@@ -56,32 +55,38 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    boost::asio::io_context state_io_context_;
-    boost::asio::io_context worker_io_context_;
+    auto state_threads_number_ = vm["state_threads"].as<int>();
+    auto worker_threads_number_ = vm["worker_threads"].as<int>();
+
+    boost::asio::io_context state_io_context_ { state_threads_number_ };
+    boost::asio::io_context worker_io_context_ { worker_threads_number_ };
     const auto state_ = std::make_shared<state>();
     const auto serve_as_ = vm["serve-as"].as<std::string>();
 
     if (serve_as_ == "state") {
-        std::cout << "[INFO] Server running as `state`" << std::endl;
+        std::cout << INFO << "Server running as `state`" << std::endl;
+        auto const address_ = boost::asio::ip::make_address("0.0.0.0");
+        std::make_shared<server>(state_io_context_, state_, boost::asio::ip::tcp::endpoint{address_, 8000})->run();
     } else if (serve_as_ == "worker") {
-        std::cout << "[INFO] Server running as `worker`" << std::endl;
+        std::cout << INFO << "Server running as `worker`" << std::endl;
+        std::make_shared<client>(worker_io_context_)->run();
     } else if (serve_as_ == "both") {
-        std::cout << "[INFO] Server running as `state` and `worker`" << std::endl;
+        std::cout << INFO << "Server running as `state` and `worker`" << std::endl;
+        auto const address_ = boost::asio::ip::make_address("0.0.0.0");
+        std::make_shared<server>(state_io_context_, state_, boost::asio::ip::tcp::endpoint{address_, 8000})->run();
+        std::make_shared<client>(worker_io_context_)->run();
     } else {
-        std::cerr << "[ERROR] Option `server-as` should be `state`, `worker` or `both`" << std::endl;
+        std::cerr << ERROR << "Option `server-as` should be `state`, `worker` or `both`" << std::endl;
         return EXIT_FAILURE;
     }
 
-    auto state_threads_number_ = vm["state_threads"].as<int>();
-    auto worker_threads_number_ = vm["worker_threads"].as<int>();
-
     if ((serve_as_ == "state" || serve_as_ == "both") && state_threads_number_ < 1) {
-        std::cout << "[WARN] Option `state_threads` should be equals or greater than `1`" << std::endl;
+        std::cout << WARN << "Option `state_threads` should be equals or greater than `1`" << std::endl;
         state_threads_number_ = 1;
     }
 
     if ((serve_as_ == "worker" || serve_as_ == "both") && worker_threads_number_ < 1) {
-        std::cout << "[WARN] Option `worker_threads` should be equals or greater than `1`" << std::endl;
+        std::cout << WARN << "Option `worker_threads` should be equals or greater than `1`" << std::endl;
         worker_threads_number_ = 1;
     }
 
@@ -102,9 +107,7 @@ int main(int argc, char *argv[]) {
 
     if (serve_as_ == "state" || serve_as_ == "both") {
         std::thread state_thread_([&state_io_context_, &state_]() {
-            std::cout << "[INFO] State in the begginging ... " << std::endl;
-            auto const address_ = boost::asio::ip::make_address("0.0.0.0");
-            std::make_shared<server>(state_io_context_, state_, boost::asio::ip::tcp::endpoint{address_, 8000})->run();
+            std::cout << INFO << "State in the begginging ... " << std::endl;
             state_io_context_.run();
         });
         state_thread_.detach();
@@ -112,8 +115,7 @@ int main(int argc, char *argv[]) {
 
     if (serve_as_ == "worker" || serve_as_ == "both") {
         std::thread worker_thread_([&worker_io_context_]() {
-            std::cout << "[INFO] Worker in the begginging ... " << std::endl;
-            std::make_shared<client>(worker_io_context_)->run();
+            std::cout << INFO << "Worker in the begginging ... " << std::endl;
             worker_io_context_.run();
         });
         worker_thread_.detach();

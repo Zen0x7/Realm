@@ -1,5 +1,6 @@
 #include <client.h>
 
+#include <constants.h>
 #include <protocol.h>
 
 #include <iostream>
@@ -9,7 +10,7 @@ client::client(boost::asio::io_context &io_context) : resolver_(make_strand(io_c
 }
 
 void client::do_resolve() {
-    std::cout << "[INFO] Resolving ..." << std::endl;
+    std::cout << INFO << "Resolving ..." << std::endl;
     resolver_.async_resolve("0.0.0.0", "8000",
                                 boost::beast::bind_front_handler(&client::on_resolve, shared_from_this()));
 }
@@ -20,19 +21,19 @@ void client::run() {
 
 void client::on_resolve(const boost::system::error_code &error_code,
                         boost::asio::ip::tcp::resolver::results_type endpoints) {
-    std::cout << "[INFO] Resolved ..." << std::endl;
+    std::cout << INFO << "Resolved ..." << std::endl;
     if (!error_code) {
-        std::cout << "[INFO] Connecting ..." << std::endl;
+        std::cout << INFO << "Connecting ..." << std::endl;
         stream_.async_connect(endpoints,
             boost::beast::bind_front_handler(&client::on_connect, shared_from_this()));
     } else {
-        throw std::invalid_argument("State can't be resolved");
+        throw std::runtime_error("State can't be resolved");
     }
 }
 
 void client::on_connect(const boost::system::error_code &error_code, boost::asio::ip::tcp::resolver::results_type::endpoint_type) {
     if (!error_code) {
-        std::cout << "[INFO] Connected" << std::endl;
+        std::cout << INFO << "Connected" << std::endl;
         do_read_header();
     }
 }
