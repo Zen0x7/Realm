@@ -4,7 +4,7 @@
 
 #include <boost/asio.hpp>
 
-class client {
+class client : public std::enable_shared_from_this<client> {
 public:
     explicit client(boost::asio::io_context &io_context);
 

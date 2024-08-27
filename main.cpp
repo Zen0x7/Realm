@@ -108,8 +108,8 @@ int main(int argc, char *argv[]) {
         for (auto i = worker_threads_number_ - 1; i > 0; --i)
             worker_threads_.emplace_back([&worker_io_context_] { worker_io_context_.run(); });
 
-        boost::asio::signal_set state_signals_(worker_io_context_, SIGINT, SIGTERM);
-        state_signals_.async_wait(
+        boost::asio::signal_set worker_signals_(worker_io_context_, SIGINT, SIGTERM);
+        worker_signals_.async_wait(
             [&](boost::system::error_code const &, int) {
                 worker_io_context_.stop();
             });

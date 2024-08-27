@@ -3,16 +3,16 @@
 #include <protocol.h>
 
 #include <iostream>
+#include <boost/beast/core/bind_handler.hpp>
 
-client::client(boost::asio::io_context &io_context) : resolver_(io_context), socket_(io_context) {
+client::client(boost::asio::io_context &io_context) : resolver_(make_strand(io_context)), socket_(io_context) {
 }
 
 void client::do_resolve() {
-    std::string server = "localhost";
+    std::string server = "0.0.0.0";
+    std::cout << "[INFO] Resolving ..." << std::endl;
     resolver_.async_resolve(server, "8000",
-                            std::bind(&client::on_resolve, this,
-                                      boost::asio::placeholders::error,
-                                      boost::asio::placeholders::results));
+                                boost::beast::bind_front_handler(&client::on_resolve, shared_from_this()));
 }
 
 void client::run() {
@@ -22,21 +22,17 @@ void client::run() {
 void client::on_resolve(const boost::system::error_code &error_code,
                         const boost::asio::ip::tcp::resolver::results_type &endpoints) {
     if (!error_code) {
+        std::cout << "[INFO] Connecting ..." << std::endl;
         async_connect(socket_, endpoints,
                       std::bind(&client::on_connect, this, boost::asio::placeholders::error));
     } else {
-        // do_resolve();
-        std::cout << "Resolving ..." << std::endl;
-        std::string server = "localhost";
-        resolver_.async_resolve(server, "8000",
-                                std::bind(&client::on_resolve, this,
-                                          boost::asio::placeholders::error,
-                                          boost::asio::placeholders::results));
+        throw std::invalid_argument("State can't be resolved");
     }
 }
 
 void client::on_connect(const boost::system::error_code &error_code) {
     if (!error_code) {
+        std::cout << "[INFO] Connected" << std::endl;
         do_read_header();
     }
 }
