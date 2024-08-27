@@ -21,7 +21,7 @@ private:
     message message_;
 
     void on_resolve(const boost::system::error_code &error_code,
-                    const boost::asio::ip::tcp::resolver::results_type &endpoints);
+                    boost::asio::ip::tcp::resolver::results_type endpoints);
 
     void on_connect(const boost::system::error_code &error_code, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
 

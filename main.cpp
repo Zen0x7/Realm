@@ -103,7 +103,8 @@ int main(int argc, char *argv[]) {
     if (serve_as_ == "state" || serve_as_ == "both") {
         std::thread state_thread_([&state_io_context_, &state_]() {
             std::cout << "[INFO] State in the begginging ... " << std::endl;
-            std::make_shared<server>(state_io_context_, state_, 8000)->run();
+            auto const address_ = boost::asio::ip::make_address("0.0.0.0");
+            std::make_shared<server>(state_io_context_, state_, boost::asio::ip::tcp::endpoint{address_, 8000})->run();
             state_io_context_.run();
         });
         state_thread_.detach();

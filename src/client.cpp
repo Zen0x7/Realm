@@ -9,9 +9,8 @@ client::client(boost::asio::io_context &io_context) : resolver_(make_strand(io_c
 }
 
 void client::do_resolve() {
-    std::string server = "localhost";
     std::cout << "[INFO] Resolving ..." << std::endl;
-    resolver_.async_resolve(server, "8000",
+    resolver_.async_resolve("0.0.0.0", "8000",
                                 boost::beast::bind_front_handler(&client::on_resolve, shared_from_this()));
 }
 
@@ -20,7 +19,8 @@ void client::run() {
 }
 
 void client::on_resolve(const boost::system::error_code &error_code,
-                        const boost::asio::ip::tcp::resolver::results_type &endpoints) {
+                        boost::asio::ip::tcp::resolver::results_type endpoints) {
+    std::cout << "[INFO] Resolved ..." << std::endl;
     if (!error_code) {
         std::cout << "[INFO] Connecting ..." << std::endl;
         stream_.async_connect(endpoints,

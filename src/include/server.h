@@ -6,7 +6,7 @@
 
 class server : public std::enable_shared_from_this<server> {
 public:
-    server(boost::asio::io_context &io_context, std::shared_ptr<state> const &state, short port);
+    server(boost::asio::io_context &io_context, std::shared_ptr<state> const &state, boost::asio::ip::tcp::endpoint endpoint);
 
     void run();
 private:
