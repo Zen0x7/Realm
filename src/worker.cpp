@@ -49,7 +49,7 @@ void worker::do_write() {
                 });
 }
 
-worker::worker(boost::asio::ip::tcp::socket socket, std::shared_ptr<state> const &state) : state_(state),
+worker::worker(boost::asio::ip::tcp::socket && socket, std::shared_ptr<state> const &state) : state_(state),
     id_(boost::uuids::random_generator()()),
     socket_(std::move(socket)) {
 }

@@ -21,6 +21,9 @@ void client::on_resolve(const boost::system::error_code &error_code,
     if (!error_code) {
         async_connect(socket_, endpoints,
                       std::bind(&client::on_connect, this, boost::asio::placeholders::error));
+    } else {
+        // do_resolve();
+        throw std::invalid_argument("Can't resolve");
     }
 }
 

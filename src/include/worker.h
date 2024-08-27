@@ -7,7 +7,7 @@
 
 class worker : public std::enable_shared_from_this<worker> {
 public:
-    worker(boost::asio::ip::tcp::socket socket, std::shared_ptr<state> const &state);
+    worker(boost::asio::ip::tcp::socket && socket, std::shared_ptr<state> const &state);
 
     ~worker();
 
