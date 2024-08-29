@@ -52,6 +52,4 @@ So basically, if we illustrate this situation we are going to see something like
 [worker] sent [0 33333333 55555555 0000] to [state] as ACK
 ```
 
-As `55555555` is the message id, it should be replied including.
-
 > Note: Of course, this is an example and data parts sizes aren't exact.
