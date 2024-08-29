@@ -10,8 +10,10 @@
 #include <state.h>
 #include <server.h>
 #include <client.h>
+#include <iostream>
 
 int main(int argc, char *argv[]) {
+    std::ios::sync_with_stdio(true);
     boost::program_options::options_description program_description("Allowed options");
 
     program_description.add_options()
