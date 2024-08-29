@@ -29,7 +29,6 @@ protocol_response protocol::from_server(const message & message)  {
         // Works
         const std::string data = { message.body(), message.body_length() };
 
-
         std::cout << data << std::endl;
         return {
             .status_code_ = protocol_response::OK,
