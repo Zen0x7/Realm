@@ -2,34 +2,56 @@
 
 ## Generics
 
-### Wrapper
+### Message
 
-There are a wrapper structure which should be respected in order to make transactions in a bidirectional way:
+Realm protocol uses the following `message` struct:
 
-One message will be similar like:
+```php
+struct {
+    char[16] sender_id;
+    char[16] message_id;
+    char[512] data;
+    char[4] crc;
+}
+```
+
+A serialized version can be seen as the following example:
 
 ```
-  38,f3d2a257-44f2-4a75-b689-e15d1687e419,9a16fbe1-f1b8-464c-9d2d-c4ae515768e9,{"event":"user_action:form_completed"},01010101
+[2 bytes: data_size]
+[16 bytes: sender_id]
+[16 bytes: message_id]
+[{data_size} bytes: data]
+[4 bytes: crc]
 ```
 
-Basically there are 5 identifiable parts:
+> Note: Serialization put all the content in a single line.
 
-1. `38` is the number of bytes after the third comma.
-2. `f3d2a257-44f2-4a75-b689-e15d1687e419` is the `sender identifier` which can represents both, server or worker.
-3. `9a16fbe1-f1b8-464c-9d2d-c4ae515768e9` is the `message identifier` which is used for ACK purposes.
-4. `{"event":"user_action:form_completed"}` is a custom data example sent via the protocol.
-5. `01010101` is the CRC-32 checksum of the content between the 1st comma and the 4th comma.
+Basically we have 5 parts:
 
-By the way, the previous isn't a real example as is a `human-readable` message. 
+1. `data_size` serializes `uint16_t` encoded in 2 bytes.
+2. `sender_id` serializes `boost::uuids::uuid` encoded in 16 bytes.
+3. `message_id` serializes `boost::uuids::uuid` encoded in 16 bytes.
+4. `data` encoded in `data_size` bytes.
+5. `crc` serializes `boost::crc_32_type` encoded in 4 bytes.
 
-In order to have a real representation we need to consider the following concerns:
+In order to confirm the message, the counterpart should reply with an ack message, which uses the same shape but doesn't include data. Of course, `message_id` should be the same `message_id` of the original one.
 
-- The first element MUST BE a 2 bytes number.
-- The second element and third element are Universal Unique Identifier version 4 serialized in 16 bytes.
-- The fourth element MUST BE a valid JSON expression.
-- The last element MUST BE a binary representation of 4 bytes.
-- And commas MUST BE not included in the message body as SHOULD BE considered as logic separator.
+```
+[2 bytes: data_size = 0]
+[16 bytes: sender_id]
+[16 bytes: message_id]
+[4 bytes: crc]
+```
 
-## From Server to Workers
+So basically, if we illustrate this situation we are going to see something like:
 
-### 
+```
+[worker] establishes a connection with [state] so
+[state] sent [8 77777777 55555555 33333333 0000] to [worker] as WELCOME_MESSAGE
+[worker] sent [0 33333333 55555555 0000] to [state] as ACK
+```
+
+As `55555555` is the message id, it should be replied including.
+
+> Note: Of course, this is an example and data parts sizes aren't exact.
