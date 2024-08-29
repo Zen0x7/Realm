@@ -41,29 +41,34 @@ void client::on_connect(const boost::system::error_code &error_code,
 }
 
 void client::do_read_header() {
-    stream_.async_read_some(boost::asio::buffer(message_.data(), message::header_length_),
-                            [this](const boost::system::error_code &error_code, std::size_t length) {
-                                if (!error_code && message_.decode()) {
-                                    do_read_body();
-                                } else {
-                                    stream_.close();
-                                }
-                            });
+    async_read(stream_, boost::asio::buffer(message_.data(), message::header_length_),
+                boost::beast::bind_front_handler(&client::on_read_header, shared_from_this()));
+}
+
+void client::on_read_header(const boost::system::error_code &error_code, std::size_t length) {
+    if (!error_code && message_.decode()) {
+        do_read_body();
+    } else {
+        stream_.close();
+    }
 }
 
 void client::do_read_body() {
-    stream_.async_read_some(
+    async_read(
+        stream_,
         boost::asio::buffer(message_.body(), message_.body_length() + message::attribute_checksum_length_),
-        [this](const boost::system::error_code &error_code, std::size_t length) {
-            if (!error_code) {
-                const auto reply = protocol::from_worker(message_);
-                if (!reply.closes) {
-                    do_read_header();
-                } else {
-                    stream_.close();
-                }
-            } else {
-                stream_.close();
-            }
-        });
+         boost::beast::bind_front_handler(&client::on_read_body, shared_from_this()));
+}
+
+void client::on_read_body(const boost::system::error_code &error_code, std::size_t length) {
+    if (!error_code) {
+        const auto reply = protocol::from_worker(message_);
+        if (!reply.closes) {
+            do_read_header();
+        } else {
+            stream_.close();
+        }
+    } else {
+        stream_.close();
+    }
 }
