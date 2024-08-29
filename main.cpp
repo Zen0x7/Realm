@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
     auto state_threads_number_ = vm["state_threads"].as<int>();
     auto worker_threads_number_ = vm["worker_threads"].as<int>();
 
-    boost::asio::io_context state_io_context_ { state_threads_number_ };
-    boost::asio::io_context worker_io_context_ { worker_threads_number_ };
+    boost::asio::io_context state_io_context_{state_threads_number_};
+    boost::asio::io_context worker_io_context_{worker_threads_number_};
     const auto state_ = std::make_shared<state>();
     const auto serve_as_ = vm["serve-as"].as<std::string>();
 
