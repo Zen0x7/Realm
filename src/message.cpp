@@ -76,9 +76,7 @@ void message::body_length(std::size_t new_length) {
 
 bool message::decode() {
     std::memcpy(&body_length_, data_ + 0, attribute_size_length_);
-
     std::memcpy(sender_id_.data, data_ + attribute_size_length_, attribute_identifier_length_);
-
     std::memcpy(id_.data, data_ + (attribute_size_length_ + attribute_identifier_length_),
                 attribute_identifier_length_);
 
@@ -92,17 +90,24 @@ bool message::decode() {
 void message::encode(const std::string &data) {
     auto *body_size = (char *) &body_length_;
     std::stringstream stream;
+    // Add size
     stream.write(body_size, attribute_size_length_);
-    stream.write(serialize(sender_id_).data(), attribute_identifier_length_);
-    stream.write(serialize(id_).data(), attribute_identifier_length_);
-    stream.write(data.data(), data.size());
 
+    // Adds identifiers
+    foreach(const uint8_t &byte, sender_id_) { stream << byte; }
+    foreach(const uint8_t &byte, id_) { stream << byte; }
+
+    // Add data
+    stream << data;
+
+    // Adds a CRC
     boost::crc_32_type crc;
     crc.process_bytes(stream.str().data(), stream.str().size());
     char checksum[attribute_checksum_length_] = "";
     const unsigned long checksum_value = crc.checksum();
     std::memcpy(checksum, &checksum_value, attribute_checksum_length_);
-    stream.write(checksum, attribute_checksum_length_);
+    stream << checksum << std::endl;
 
+    // Merge and push
     std::memcpy(data_, stream.str().data(), stream.str().size());
 }
