@@ -58,6 +58,11 @@ int main(int argc, char *argv[]) {
 
     auto threads_number_ = vm["threads"].as<int>();
 
+    if (threads_number_ < 1) {
+        std::cout << WARN << "Option `threads` should be equals or greater than `1`" << std::endl;
+        threads_number_ = 1;
+    }
+
     boost::asio::io_context io_context_ { threads_number_ };
     const auto state_ = std::make_shared<state>();
     const auto serve_as_ = vm["serve-as"].as<std::string>();
@@ -77,11 +82,6 @@ int main(int argc, char *argv[]) {
     } else {
         std::cerr << ERROR << "Option `server-as` should be `state`, `worker` or `both`" << std::endl;
         return EXIT_FAILURE;
-    }
-
-    if (threads_number_ < 1) {
-        std::cout << WARN << "Option `threads` should be equals or greater than `1`" << std::endl;
-        threads_number_ = 1;
     }
 
     std::vector<std::thread> threads_;
