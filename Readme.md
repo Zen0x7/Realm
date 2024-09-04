@@ -1,6 +1,10 @@
 <h1 align="center">Copper</h1>
 
 <p align="center">
+    <img src="./people.png" alt="People">
+</p>
+
+<p align="center">
     <img src="./about.jpg" alt="Copper">
 </p>
 
