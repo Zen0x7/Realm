@@ -1,6 +1,12 @@
-# Realm
+<h1 align="center">Copper</h1>
 
-This project is a high performance, scalable and distributed data exchange system.
+<p align="center">
+    <img src="./about.jpg" alt="Copper">
+</p>
+
+# About
+
+**Copper** is a **high performance, scalable and distributed data exchange system**.
 
 ![Diagram](diagram.png)
 
