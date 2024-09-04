@@ -8,11 +8,13 @@
     <img src="./about.jpg" alt="Copper">
 </p>
 
-# About
+<h2 align="center">About</h2>
 
 **Copper** is a **high performance, scalable and distributed data exchange system**.
 
-![Diagram](diagram.png)
+<p align="center">
+    <img src="./diagram.png" alt="Diagram">
+</p>
 
 ## About the Protocol
 
